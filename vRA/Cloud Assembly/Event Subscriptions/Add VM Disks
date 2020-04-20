@@ -1,0 +1,21 @@
+{
+  "id": "sub_1587151560881",
+  "type": "RUNNABLE",
+  "eventTopicId": "compute.provision.post",
+  "name": "Add VM Disks",
+  "orgId": "dc659fec-d051-40a6-bf8a-cb9489e045ed",
+  "subscriberId": "vro-gateway-cZB9JLsb6i5Gq4iH",
+  "blocking": true,
+  "description": "",
+  "criteria": "",
+  "constraints": {
+    "projectId": null
+  },
+  "timeout": 10,
+  "broadcast": false,
+  "priority": 10,
+  "disabled": false,
+  "system": false,
+  "runnableType": "extensibility.vro",
+  "runnableId": "fc9d21ee-5c44-469c-b99c-9d95553150c1"
+} 
