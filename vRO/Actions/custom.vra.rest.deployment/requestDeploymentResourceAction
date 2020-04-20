@@ -79,7 +79,7 @@ function requestDeploymentResourceAction(deploymentId, deploymentName, resourceI
 	        var body = '{"actionId": "' + actionId + '", "reason": "' + reason + '"}'
 	    }
 	System.log(body)
-	    var request = restHost.createRequest('POST', url, body)
+	    var request = restHost.createRequest('POST', encodeURI(url), body)
 	
 	    request.setHeader('Authorization', 'Bearer ' + token)
 	    request.setHeader('Content-Type', 'application/json')
