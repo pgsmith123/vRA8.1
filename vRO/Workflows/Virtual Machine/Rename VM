@@ -1,0 +1,84 @@
+inputForms:
+  - schema:
+      inputProperties:
+        id: inputProperties
+        type:
+          isMultiple: true
+          dataType: complex
+          fields:
+            - id: key
+              type:
+                dataType: string
+              label: key
+            - id: value
+              type:
+                dataType: string
+              label: value
+        label: inputProperties
+        constraints:
+          required: false
+    layout:
+      pages:
+        - id: page_c3v1v4zu
+          title: General
+          sections:
+            - id: section_8z71zftb
+              fields:
+                - id: inputProperties
+                  display: datagrid
+    itemId: ''
+workflowSchema:
+  display-name: Rename VM
+  position:
+    'y': 50
+    x: 100
+  input:
+    param:
+      - name: inputProperties
+        type: Properties
+  output:
+    param:
+      - name: resourceNames
+        type: Array/string
+  attrib: []
+  workflow-item:
+    - in-binding: {}
+      out-binding: {}
+      position:
+        'y': 50
+        x: 330
+      name: item0
+      type: end
+      end-mode: '0'
+      comparator: 0
+    - display-name: Scriptable task
+      script:
+        value: "System.log(JSON.stringify(inputProperties))\r\n\r\nresourceNames = new Array()\r\n\r\nvar props = JSON.parse(JSON.stringify(inputProperties))\r\nSystem.log(props.resourceNames)\r\nvar split = props.resourceNames[0].split('-')\r\nsplit.pop()\r\nsplit.pop()\r\nresourceNames.push(split.join('-'))"
+        encoded: false
+      in-binding:
+        bind:
+          - name: inputProperties
+            type: Properties
+            export-name: inputProperties
+      out-binding:
+        bind:
+          - name: resourceNames
+            type: Array/string
+            export-name: resourceNames
+      description: Simple task with custom script capability.
+      position:
+        'y': 60
+        x: 180
+      name: item1
+      out-name: item0
+      type: task
+      comparator: 0
+  presentation: {}
+  root-name: item1
+  object-name: 'workflow:name=generic'
+  id: 59793036-3550-42b4-be0e-2d824d889e89
+  version: 0.0.0
+  api-version: 6.0.0
+  restartMode: 1
+  resumeFromFailedMode: 0
+  editor-version: '2.0'

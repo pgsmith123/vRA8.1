@@ -1,0 +1,21 @@
+/**
+ *
+ * @module edu.ufl.rest.util
+ *
+ * @version 0.0.0
+ *
+ * @param {SecureString} accessToken 
+ * @param {REST:RESTHost} restHost 
+ * @param {boolean} debug 
+ *
+ * @outputType string
+ *
+ */
+function setRestAccessToken(accessToken, restHost, debug) {
+	System.log('Setting access token for ' + restHost.name)
+	if (debug) {
+	    System.log(accessToken)
+	}
+	Server.setCustomProperty(restHost , "accessToken" , accessToken)
+	Server.setCustomProperty(restHost , "accessTokenDate" , System.getCurrentTime())
+}

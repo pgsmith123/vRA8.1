@@ -1,0 +1,21 @@
+/**
+ *
+ * @module edu.ufl.rest.util
+ *
+ * @version 0.0.0
+ *
+ * @param {SecureString} apiToken 
+ * @param {REST:RESTHost} restHost 
+ * @param {boolean} debug 
+ *
+ * @outputType string
+ *
+ */
+function setRestApiToken(apiToken, restHost, debug) {
+	System.log('Setting API token for ' + restHost.name)
+	if (debug) {
+	    System.log(apiToken)
+	}
+	Server.setCustomProperty(restHost , "apiToken" , apiToken)
+	Server.setCustomProperty(restHost , "apiTokenDate" , System.getCurrentTime())
+}

@@ -1,0 +1,67 @@
+/**
+ *
+ * @module edu.ufl.vra.rest.iaas
+ *
+ * @version 0.0.0
+ *
+ * @param {string} projectId 
+ * @param {string} projectName 
+ * @param {string} configurationPath 
+ * @param {string} configurationName 
+ * @param {string} configurationAttributeRestHostName 
+ * @param {string} configurationAttributeRestHostUsernameName 
+ * @param {string} configurationAttributeRestHostPasswordName 
+ *
+ * @outputType string
+ *
+ */
+function getProject(projectId, projectName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName) {
+	var restHost = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostName)
+	var token = System.getModule("edu.ufl.vra.authentication").getBearerToken(configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	
+	if (!restHost) {
+	    throw 'No vRA REST host found'
+	}
+	if (!token) {
+	    throw 'No vRA REST access token found'
+	}
+	
+	if (!projectId && !projectName) {
+	    throw 'No vRA project name or id provided'
+	}
+	
+	try {
+	    if (projectName) {
+	        var url = '/iaas/api/projects/'
+	    }
+	    else {
+	        var url = '/iaas/api/projects/' + projectId
+	    }
+	    
+	    var request = restHost.createRequest('GET', url)
+	
+	    request.setHeader('Authorization', 'Bearer ' + token)
+	    request.setHeader('Content-Type', 'application/json')
+	    request.setHeader('Cache-Control', 'no-cache')
+	
+	    var response = request.execute()
+	
+	    if (response.statusCode != 200) {
+	        throw response.statusCode
+	    }
+	    
+	    if (projectName) {
+	        for each (project in JSON.parse(response.contentAsString).content) {
+	            if (project.name.toLowerCase() == projectName.toLowerCase()) {
+	                return JSON.stringify(project)
+	            }
+	        }
+	    }
+	    else {
+	        return response.contentAsString
+	    }
+	}
+	catch(e) {
+	    throw e
+	}
+}

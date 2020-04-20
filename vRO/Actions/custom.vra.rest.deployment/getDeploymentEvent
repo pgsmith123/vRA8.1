@@ -1,0 +1,68 @@
+/**
+ *
+ * @module edu.ufl.vra.rest.deployment
+ *
+ * @version 0.0.0
+ *
+ * @param {string} deploymentId 
+ * @param {string} deploymentName 
+ * @param {string} eventId 
+ * @param {string} configurationPath 
+ * @param {string} configurationName 
+ * @param {string} configurationAttributeRestHostName 
+ * @param {string} configurationAttributeRestHostUsernameName 
+ * @param {string} configurationAttributeRestHostPasswordName 
+ *
+ * @outputType string
+ *
+ */
+function getDeploymentEvent(deploymentId, deploymentName, eventId, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName) {
+	var restHost = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostName)
+	var token = System.getModule("edu.ufl.vra.authentication").getBearerToken(configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	
+	if (!restHost) {
+	    throw 'No vRA REST host found'
+	}
+	if (!token) {
+	    throw 'No vRA REST access token found'
+	}
+	
+	if (!deploymentName && !deploymentId) {
+	    throw 'No deployment name or id provided'
+	}
+	
+	try {
+	    if (deploymentName) {
+	        deploymentId = JSON.parse(System.getModule("edu.ufl.vra.rest.deployment").getDeployment(null, deploymentName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)).id
+	    }
+	
+	    if (!deploymentId) {
+	        throw 'No deployment ID found'
+	    }
+	
+	    var url = '/deployment/api/deployments/' + deploymentId + '/events'
+	    var request = restHost.createRequest('GET', url)
+	
+	    request.setHeader('Authorization', 'Bearer ' + token)
+	    request.setHeader('Content-Type', 'application/json')
+	    request.setHeader('Cache-Control', 'no-cache')
+	
+	    var response = request.execute()
+	
+	    if (response.statusCode != 200) {
+	        throw response.statusCode
+	    }
+	
+	    for each (event in JSON.parse(response.contentAsString).content) {
+	        if (event.id == eventId) {
+	            return JSON.stringify(event)
+	        }
+	    }
+	
+	    throw 'No event with id ' + eventId + ' found for deployment ' + deploymentId
+	
+	}
+	catch(e) {
+	    throw e
+	}
+}

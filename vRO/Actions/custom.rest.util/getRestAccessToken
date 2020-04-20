@@ -1,0 +1,39 @@
+/**
+ *
+ * @module edu.ufl.rest.util
+ *
+ * @version 0.0.0
+ *
+ * @param {REST:RESTHost} restHost 
+ * @param {number} sessionTimeout hours
+ * @param {boolean} debug 
+ *
+ * @outputType SecureString
+ *
+ */
+function getRestAccessToken(restHost, sessionTimeout, debug) {
+	System.log('Getting access token for ' + restHost.name)
+	var date = Server.getCustomProperty(restHost, "accessTokenDate")
+	if (date) {
+		var currentDate = System.getCurrentTime()
+		if (currentDate - (sessionTimeout * 3600000) < date) {
+			var token = Server.getCustomProperty(restHost, "accessToken")
+			System.log('Got access token for ' + restHost.name)
+	        if (debug) {
+	            System.log(token)
+	        }
+	
+	        if (token == null) {
+	            throw 'no token found'
+	        }
+	        
+			return token
+		}
+		else {
+			throw 'Not returning token. Token older than ' + sessionTimeout + ' hours.'
+		}
+	}
+	else {
+		throw 'Not returning token. No session date.'
+	}
+}

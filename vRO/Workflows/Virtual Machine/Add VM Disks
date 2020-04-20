@@ -1,0 +1,125 @@
+inputForms:
+  - schema:
+      inputProperties:
+        id: inputProperties
+        type:
+          isMultiple: true
+          dataType: complex
+          fields:
+            - id: key
+              type:
+                dataType: string
+              label: key
+            - id: value
+              type:
+                dataType: string
+              label: value
+        label: inputProperties
+        constraints:
+          required: false
+    layout:
+      pages:
+        - id: page_ttb8tm4k
+          title: General
+          sections:
+            - id: section_0v313rim
+              fields:
+                - id: inputProperties
+                  display: datagrid
+    itemId: ''
+workflowSchema:
+  display-name: Add VM Disks
+  position:
+    'y': 50
+    x: 100
+  input:
+    param:
+      - name: inputProperties
+        type: Properties
+  output: {}
+  attrib:
+    - value:
+        string:
+          value: add disk
+      type: string
+      name: actionName
+    - value:
+        string:
+          value: ''
+      type: string
+      name: configurationPath
+    - value:
+        string:
+          value: ''
+      type: string
+      name: configurationName
+    - value:
+        string:
+          value: ''
+      type: string
+      name: configurationAttributeRestHostName
+    - value:
+        string:
+          value: ''
+      type: string
+      name: configurationAttributeRestHostUsernameName
+    - value:
+        string:
+          value: ''
+      type: string
+      name: configurationAttributeRestHostPasswordName
+  workflow-item:
+    - in-binding: {}
+      out-binding: {}
+      position:
+        'y': 50
+        x: 320
+      name: item0
+      type: end
+      end-mode: '0'
+      comparator: 0
+    - display-name: Scriptable task
+      script:
+        value: "System.log(JSON.stringify(inputProperties))\r\n\r\nvar json = JSON.parse(JSON.stringify(inputProperties))\r\nvar deploymentId = json.deploymentId\r\nvar resourceId = json.resourceIds[0]\r\n\r\n\r\nvar i = 2\r\nfor each (disk in JSON.parse(json.customProperties.disks)) {\r\n    var obj = new Object()\r\n    obj.name = 'hard disk ' + i\r\n    obj.capacityGb = disk.size\r\n    obj.encrypted = false\r\n    obj.persistent = false\r\n    obj.constraints = 'Storage Tier: ' + disk.tier + ',Storage Type:Datastore'\r\n\r\n    System.getModule(\"edu.ufl.vra.rest.deployment\").requestDeploymentResourceAction(deploymentId, null, resourceId, null, null, actionName, JSON.stringify(obj), 'user requested', configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)\r\n\r\n    i++\r\n}"
+        encoded: false
+      in-binding:
+        bind:
+          - name: inputProperties
+            type: Properties
+            export-name: inputProperties
+          - name: actionName
+            type: string
+            export-name: actionName
+          - name: configurationPath
+            type: string
+            export-name: configurationPath
+          - name: configurationName
+            type: string
+            export-name: configurationName
+          - name: configurationAttributeRestHostName
+            type: string
+            export-name: configurationAttributeRestHostName
+          - name: configurationAttributeRestHostUsernameName
+            type: string
+            export-name: configurationAttributeRestHostUsernameName
+          - name: configurationAttributeRestHostPasswordName
+            type: string
+            export-name: configurationAttributeRestHostPasswordName
+      out-binding: {}
+      description: Simple task with custom script capability.
+      position:
+        'y': 60
+        x: 180
+      name: item1
+      out-name: item0
+      type: task
+      comparator: 0
+  presentation: {}
+  root-name: item1
+  object-name: 'workflow:name=generic'
+  id: fc9d21ee-5c44-469c-b99c-9d95553150c1
+  version: 0.0.0
+  api-version: 6.0.0
+  restartMode: 1
+  resumeFromFailedMode: 0
+  editor-version: '2.0'

@@ -1,0 +1,93 @@
+/**
+ *
+ * @module edu.ufl.vra.authentication
+ *
+ * @version 0.0.0
+ *
+ * @param {string} configurationPath 
+ * @param {string} configurationName 
+ * @param {string} configurationAttributeRestHostName The name of the attribute that holds the rest host
+ * @param {string} configurationAttributeRestHostUsername The name of the attribute that holds the rest host user name
+ * @param {string} configurationAttributeRestHostPassword The name of the attribute that holds the rest host password
+ *
+ * @outputType SecureString
+ *
+ */
+function getBearerToken(configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsername, configurationAttributeRestHostPassword) {
+	var restHost = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostName)
+	
+	if (restHost) {
+	    try {
+	        var apiToken = System.getModule("edu.ufl.rest.util").getRestApiToken(restHost, 2160)
+	    }
+	    catch(e) {
+	        System.warn(e)
+	        try {
+	            var username = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostUsername)
+	            var password = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostPassword)
+	
+	            if (!username || !password) {
+	                throw 'Username or password for vRA rest host not found'
+	            }
+	
+	            var url = '/csp/gateway/am/api/login?access_token'
+	            var obj = new Object()
+	            obj.username = username
+	            obj.password = password
+	            //obj.domain = 'ad.ufl.edu'
+	            //obj.scope = '*'
+	            var request = restHost.createRequest('POST', url, JSON.stringify(obj))
+	
+	            request.setHeader('Content-Type', 'application/json')
+	            request.setHeader('Cache-Control', 'no-cache')
+	
+	            var response = request.execute()
+	
+	            if (response.statusCode != 200) {
+	                    throw response.statusCode
+	            }
+	
+	            var apiToken = JSON.parse(response.contentAsString).refresh_token
+	            
+	            System.getModule("edu.ufl.rest.util").setRestApiToken(apiToken, restHost)
+	        }
+	        catch(e) {
+	                throw e
+	        }
+	    }
+	
+	    try {
+	        return System.getModule("edu.ufl.rest.util").getRestAccessToken(restHost, 8)
+	    }
+	    catch(e) {
+	        try {
+	            System.warn(e)
+	            var url = '/iaas/api/login'
+	            var obj = new Object()
+	            obj.refreshToken = apiToken
+	            var request = restHost.createRequest('POST', url, JSON.stringify(obj))
+	
+	            request.setHeader('Content-Type', 'application/json')
+	            request.setHeader('Cache-Control', 'no-cache')
+	
+	            var response = request.execute()
+	
+	            if (response.statusCode != 200) {
+	                    throw response.statusCode
+	            }
+	
+	            var accessToken = JSON.parse(response.contentAsString).token
+	            
+	            System.getModule("edu.ufl.rest.util").setRestAccessToken(accessToken, restHost)
+	
+	            return accessToken
+	        }
+	        catch(e) {
+	                throw e
+	        }
+	    }
+	}
+	else {
+	    throw 'No vRA REST host provided'
+	}
+}

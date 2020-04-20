@@ -1,0 +1,84 @@
+/**
+ *
+ * @module edu.ufl.vra.rest.deployment
+ *
+ * @version 0.0.0
+ *
+ * @param {string} deploymentId 
+ * @param {string} deploymentName 
+ * @param {string} actionId 
+ * @param {string} actionName 
+ * @param {string} configurationPath 
+ * @param {string} configurationName 
+ * @param {string} configurationAttributeRestHostName 
+ * @param {string} configurationAttributeRestHostUsernameName 
+ * @param {string} configurationAttributeRestHostPasswordName 
+ *
+ * @outputType string
+ *
+ */
+function getDeploymentAction(deploymentId, deploymentName, actionId, actionName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName) {
+	var restHost = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostName)
+	var token = System.getModule("edu.ufl.vra.authentication").getBearerToken(configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	
+	if (!restHost) {
+	    throw 'No vRA REST host found'
+	}
+	if (!token) {
+	    throw 'No vRA REST access token found'
+	}
+	
+	if (!deploymentName && !deploymentId) {
+	    throw 'No deployment name or id provided'
+	}
+	
+	if (!actionName && !actionId) {
+	    throw 'No action name or id provided'
+	}
+	
+	try {
+	    if (deploymentName) {
+	        deploymentId = JSON.parse(System.getModule("edu.ufl.vra.rest.deployment").getDeployment(null, deploymentName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)).id
+	    }
+	
+	    if (!deploymentId) {
+	        throw 'No deployment ID found'
+	    }
+	
+	    if (actionName) {
+	        var url = '/deployment/api/deployments/' + deploymentId + '/actions'
+	    }
+	    else {
+	        var url = '/deployment/api/deployments/' + deploymentId + '/actions/' + actionId
+	    }
+	
+	    var request = restHost.createRequest('GET', url)
+	
+	    request.setHeader('Authorization', 'Bearer ' + token)
+	    request.setHeader('Content-Type', 'application/json')
+	    request.setHeader('Cache-Control', 'no-cache')
+	
+	    var response = request.execute()
+	
+	    if (response.statusCode != 200) {
+	        throw response.statusCode
+	    }
+	
+	    if (actionName) {
+	        for each (action in JSON.parse(response.contentAsString)) {
+	            if (action.displayName.toLowerCase() == actionName.toLowerCase()) {
+	                return JSON.stringify(action)
+	            }
+	        }
+	        throw 'No action found with name ' + actionName + ' in deployment ' + deploymentId
+	    }
+	    else {
+	        return response.contentAsString
+	    }
+	
+	    throw 'No action found with id ' + actionId + ' in deployment ' + deploymentId
+	}
+	catch(e) {
+	    throw e
+	}
+}

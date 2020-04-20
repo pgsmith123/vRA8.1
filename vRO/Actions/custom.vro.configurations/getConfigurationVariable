@@ -1,0 +1,26 @@
+/**
+ *
+ * @module edu.ufl.vro.configurations
+ *
+ * @version 0.0.0
+ *
+ * @param {string} configurationElementPath 
+ * @param {string} configurationElementName 
+ * @param {string} attributeName 
+ *
+ * @outputType Any
+ *
+ */
+function getConfigurationAttribute(configurationElementPath, configurationElementName, attributeName) {
+	for each (configurationElement in Server.getConfigurationElementCategoryWithPath(configurationElementPath).configurationElements) {
+		if (configurationElement.name.toLowerCase() == configurationElementName.toLowerCase()) {
+	        System.log('found configuration element ' + configurationElement.name)
+	        for each (attribute in configurationElement.attributes) {
+	            if (attribute.name.toLowerCase() == attributeName.toLowerCase()) {
+	                return attribute.value
+	            }
+	        }
+	    }
+	}
+	throw 'No attribute found'
+}

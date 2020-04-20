@@ -1,0 +1,133 @@
+/**
+ *
+ * @module edu.ufl.vra.rest.deployment
+ *
+ * @version 0.0.0
+ *
+ * @param {string} deploymentId 
+ * @param {string} deploymentName 
+ * @param {string} resourceId 
+ * @param {string} resourceName 
+ * @param {string} actionId 
+ * @param {string} actionName 
+ * @param {string} inputs JSON string {string}
+ * @param {string} reason 
+ * @param {string} configurationPath 
+ * @param {string} configurationName 
+ * @param {string} configurationAttributeRestHostName 
+ * @param {string} configurationAttributeRestHostUsernameName 
+ * @param {string} configurationAttributeRestHostPasswordName 
+ *
+ * @outputType string
+ *
+ */
+function requestDeploymentResourceAction(deploymentId, deploymentName, resourceId, resourceName, actionId, actionName, inputs, reason, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName) {
+	var restHost = System.getModule("edu.ufl.vro.configurations").getConfigurationAttribute(configurationPath, configurationName, configurationAttributeRestHostName)
+	var token = System.getModule("edu.ufl.vra.authentication").getBearerToken(configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	
+	if (!restHost) {
+	    throw 'No vRA REST host found'
+	}
+	if (!token) {
+	    throw 'No vRA REST access token found'
+	}
+	
+	if (!deploymentName && !deploymentId) {
+	    throw 'No deployment name or id provided'
+	}
+	
+	if (!resourceName && !resourceId) {
+	    throw 'No resource name or id provided'
+	}
+	
+	if (!actionName && !actionId) {
+	    throw 'No action name or id provided'
+	}
+	
+	if (!reason) {
+	    throw 'No reason provided'
+	}
+	
+	try {
+	    if (deploymentName) {
+	        deploymentId = JSON.parse(System.getModule("edu.ufl.vra.rest.deployment").getDeployment(null, deploymentName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)).id
+	    }
+	
+	    if (!deploymentId) {
+	        throw 'No deployment ID found'
+	    }
+	
+	    if (resourceName) {
+	        resourceId = JSON.parse(System.getModule("edu.ufl.vra.rest.deployment").getDeploymentResource(deploymentId, null, null, resourceName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)).id
+	    }
+	
+	    if (actionName) {
+	        action = System.getModule("edu.ufl.vra.rest.deployment").getDeploymentResourceAction(deploymentId, null, resourceId, null, null, actionName, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	        actionId = JSON.parse(action).id
+	    }
+	
+	    if (!actionId) {
+	        throw 'No action ID found'
+	    }
+	
+	    var url = '/deployment/api/deployments/' + deploymentId + '/resources/' + resourceId + '/requests'
+	    
+	    if (inputs) {
+	        var body = '{"actionId":"' + actionId + '", "targetId":"' + resourceId + '", "inputs":' + inputs + ', "reason":"' + reason + '"}'
+	    }
+	    else {
+	        var body = '{"actionId": "' + actionId + '", "reason": "' + reason + '"}'
+	    }
+	System.log(body)
+	    var request = restHost.createRequest('POST', url, body)
+	
+	    request.setHeader('Authorization', 'Bearer ' + token)
+	    request.setHeader('Content-Type', 'application/json')
+	    request.setHeader('Cache-Control', 'no-cache')
+	
+	    var response = request.execute()
+	
+	    if (response.statusCode != 200) {
+	        throw response.statusCode
+	    }
+	
+	    var requestId = JSON.parse(response.contentAsString).id
+	
+	    if (JSON.parse(action).name.toLowerCase() == 'delete') {
+	        try {
+	            do {
+	                var event = System.getModule("edu.ufl.vra.rest.deployment").getDeploymentEvent(deploymentId, null, requestId, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	                System.sleep(1000)
+	            }
+	            while (
+	                JSON.parse(event).status == 'INPROGRESS'
+	            )
+	        }
+	        catch(e) {
+	            if (e.indexOf('No deployment found') == -1) {
+	                throw e
+	            }
+	        }
+	    }
+	    else {
+	        do {
+	            var event = System.getModule("edu.ufl.vra.rest.deployment").getDeploymentEvent(deploymentId, null, requestId, configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)
+	            System.log(JSON.parse(event).status)
+	            System.sleep(1000)
+	        }
+	        while (
+	            JSON.parse(event).status != 'SUCCESSFUL' && JSON.parse(event).status != 'FAILED'
+	        )
+	    }
+	    
+	    if (JSON.parse(event).status == 'SUCCESSFUL') {
+	        return JSON.parse(event).status
+	    }
+	    else {
+	        throw JSON.parse(event).statusDetails
+	    }
+	}
+	catch(e) {
+	    throw e
+	}
+}
