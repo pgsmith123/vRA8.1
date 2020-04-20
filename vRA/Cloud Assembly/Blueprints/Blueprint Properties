@@ -1,0 +1,28 @@
+disks:
+    type: array
+    description: Configuration of additional disks to add to the VM.
+    title: Disks
+    items:
+      type: object
+      properties:
+        tier:
+          type: string
+          title: Tier
+          description: The storage tier of the disk.
+          enum:
+            - Gold
+            - Silver
+            - Bronze
+        size:
+          type: number
+          title: Size GB
+          description: The size of the disk in GB.
+          minimum: 80
+          maximum: 1000
+    maxItems: 5
+
+resources:
+  Cloud_vSphere_Machine_1:
+    type: Cloud.vSphere.Machine
+    properties:
+      disks: '${to_string(input.disks)}'
