@@ -45,27 +45,27 @@ workflowSchema:
       name: actionName
     - value:
         string:
-          value: ''
+          value: UF
       type: string
       name: configurationPath
     - value:
         string:
-          value: ''
+          value: vRA
       type: string
       name: configurationName
     - value:
         string:
-          value: ''
+          value: restHost
       type: string
       name: configurationAttributeRestHostName
     - value:
         string:
-          value: ''
+          value: vraUsername
       type: string
       name: configurationAttributeRestHostUsernameName
     - value:
         string:
-          value: ''
+          value: vraPassword
       type: string
       name: configurationAttributeRestHostPasswordName
   workflow-item:
@@ -80,7 +80,7 @@ workflowSchema:
       comparator: 0
     - display-name: Scriptable task
       script:
-        value: "System.log(JSON.stringify(inputProperties))\r\n\r\nvar json = JSON.parse(JSON.stringify(inputProperties))\r\nvar deploymentId = json.deploymentId\r\nvar resourceId = json.resourceIds[0]\r\n\r\n\r\nvar i = 2\r\nfor each (disk in JSON.parse(json.customProperties.disks)) {\r\n    var obj = new Object()\r\n    obj.name = 'hard disk ' + i\r\n    obj.capacityGb = disk.size\r\n    obj.encrypted = false\r\n    obj.persistent = false\r\n    obj.constraints = 'Storage Tier: ' + disk.tier + ',Storage Type:Datastore'\r\n\r\n    System.getModule(\"edu.ufl.vra.rest.deployment\").requestDeploymentResourceAction(deploymentId, null, resourceId, null, null, actionName, JSON.stringify(obj), 'user requested', configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)\r\n\r\n    i++\r\n}"
+        value: "System.log(JSON.stringify(inputProperties))\r\n\r\nvar json = JSON.parse(JSON.stringify(inputProperties))\r\nvar deploymentId = json.deploymentId\r\nvar resourceId = json.resourceIds[0]\r\n\r\n\r\nvar i = 2\r\nfor each (disk in JSON.parse(json.customProperties.disks)) {\r\n    var obj = new Object()\r\n    obj.name = 'hard disk ' + i\r\n    obj.capacityGb = disk.size\r\n    obj.encrypted = false\r\n    obj.persistent = false\r\n    obj.constraints = 'Storage Tier:' + disk.tier + ',Storage Type:Datastore, Availability Zone:' + json.customProperties.az\r\n\r\n    System.getModule(\"edu.ufl.vra.rest.deployment\").requestDeploymentResourceAction(deploymentId, null, resourceId, null, null, actionName, JSON.stringify(obj), 'user requested', configurationPath, configurationName, configurationAttributeRestHostName, configurationAttributeRestHostUsernameName, configurationAttributeRestHostPasswordName)\r\n\r\n    i++\r\n}"
         encoded: false
       in-binding:
         bind:
