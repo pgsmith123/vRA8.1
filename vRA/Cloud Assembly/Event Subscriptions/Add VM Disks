@@ -1,4 +1,4 @@
- {
+{
   "id": "sub_1587417530670",
   "type": "RUNNABLE",
   "eventTopicId": "deployment.request.post",
@@ -8,7 +8,7 @@
   "subscriberId": "vro-gateway-cZB9JLsb6i5Gq4iH",
   "blocking": false,
   "description": "",
-  "criteria": "",
+  "criteria": "event.data.eventType == 'CREATE_DEPLOYMENT'",
   "constraints": {
     "projectId": null
   },
